@@ -23,8 +23,8 @@ This allows users to stay organized, save time, and focus on what matters most.
 ---
 
 ## **Tech Stack Used**  
-🔹 **Backend:** Node.js, Express.js, MongoDB  
-🔹 **Frontend:** React, TypeScript, Tailwind CSS, Vite  
+🔹 **Backend:** Node.js, Express.js, Passport.js (Google Authentication)  
+🔹 **Frontend:** React, Tailwind CSS  
 🔹 **Database:** MongoDB  
 
 ---
@@ -43,11 +43,45 @@ This allows users to stay organized, save time, and focus on what matters most.
 
 ---
 
+## **Screenshots**  
+
+| **Dashboard** | **AI Insights** |
+|--------------|---------------|
+| ![Dashboard Screenshot](https://github.com/user-attachments/assets/f91e8d28-1a7c-4e60-87f8-6fb9a93006ac) | ![AI Insights Screenshot](https://github.com/user-attachments/assets/688ced5e-c24a-41ab-add0-fa44e53b0739) |
+
+---
+
 ## **Team Members**  
 👥 **L.Kiran Teja**  
 👥 **Aswin Kumar Reddy**  
 👥 **Srinivas Thanniru**  
 
+
+---
+
+## 📁 **Project Structure**
+
+```
+MailX/
+├── client/                 # React frontend application
+│   ├── src/
+│   │   ├── Components/     # Reusable React components
+│   │   ├── Pages/          # Application pages
+│   │   ├── App.tsx         # Main application component
+│   │   └── main.tsx        # Application entry point
+│   ├── public/             # Static assets
+│   ├── package.json        # Frontend dependencies
+│   └── vite.config.ts      # Vite configuration
+├── server/                 # Node.js backend application
+│   ├── models/             # MongoDB data models
+│   ├── routes.js           # API routes
+│   ├── server.js           # Main server file
+│   └── package.json        # Backend dependencies
+├── .env                    # Environment variables
+├── .gitignore              # Git ignore rules
+├── README.md               # Project documentation
+└── package.json            # Root dependencies
+```
 
 ---
 
@@ -58,8 +92,8 @@ Follow these steps to set up and run the *MailX* project on your local system.
 ### 📥 **Step 1: Clone the Repository**  
 
 ```bash
-git clone https://github.com/KiranTejz20005/Mail_X.git
-cd MailX
+ git clone https://github.com/KiranTejz20005/Mail_X.git
+ cd MailX
 ```
 
 ---
@@ -95,7 +129,7 @@ npm start
 
 ```bash
 cd ../client
-npm run dev
+npm start
 ```
 
 ---
@@ -121,12 +155,24 @@ You're all set to use **MailX** locally! 🚀
 ---
 
 ## 🌍 **Live Application**  
-- **Frontend:** [MailX Frontend](https://mail-x.vercel.app/)  
-- **Backend:** [MailX Backend](https://mailx-backend.onrender.com/)  
+- **Frontend**: [MailX Frontend](https://mail-x.vercel.app/)
+- **Backend:** [MailX Backend](https://automailx-sm-52mt.onrender.com/)
+- **Repository**: [GitHub Repository](https://github.com/KiranTejz20005/Mail_X.git)
+ 
 
 ---
+
 
 ## 📊 **Presentation**  
-📜 [MailX PPT](https://www.canva.com/design/DAGd1j2EOzM/tZTvvkK-hNV-gnq49clbrw/edit?utm_content=DAGd1j2EOzM&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton)  
+📜 [MailX PPT](https://www.canva.com/design/DAG1i7DF4ds/bDUwkf3tz1xyCVgj5K_TMw/edit?utm_content=DAG1i7DF4ds&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton)  
 
 ---
+
+## 📞 **Support**
+
+For support, email support@mailx.com or join our Slack channel.
+
+---
+
+
+**Made with ❤️ by the MailX Team**
