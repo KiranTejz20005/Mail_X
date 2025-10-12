@@ -47,7 +47,7 @@ This allows users to stay organized, save time, and focus on what matters most.
 
 | **Dashboard** | **AI Insights** |
 |--------------|---------------|
-| ![Dashboard Screenshot](https://github.com/user-attachments/assets/f91e8d28-1a7c-4e60-87f8-6fb9a93006ac) | ![AI Insights Screenshot](https://github.com/user-attachments/assets/688ced5e-c24a-41ab-add0-fa44e53b0739) |
+| ![Dashboard Screenshot](MailX\images\photo1.PNG) | ![AI Insights Screenshot](MailX\images\photo2.PNG) |
 
 ---
 
