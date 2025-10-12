@@ -47,7 +47,7 @@ This allows users to stay organized, save time, and focus on what matters most.
 
 | **Dashboard** | **AI Insights** |
 |--------------|---------------|
-| ![Dashboard Screenshot](MailX\images\photo1.PNG) | ![AI Insights Screenshot](MailX\images\photo2.PNG) |
+| <img src="images/photo1.PNG" alt="Dashboard Screenshot" width="600"/> | <img src="images/photo2.PNG" alt="AI Insights Screenshot" width="600"/> |
 
 ---
 
