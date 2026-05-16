@@ -1,121 +1,102 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { Loader2 } from 'lucide-react';
 import { AuthLayout } from '../Components/AuthLayout';
+import { useAuth } from '../context/AuthContext';
+import { scaleIn } from '../lib/motionPresets';
 
 export function Login() {
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-  });
+  const [formData, setFormData] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { signIn } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setLoading(true);
     try {
-      const response = await fetch('https://automailx-sm.onrender.com/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.message || 'Login failed');
-      }
-
-      localStorage.setItem('token', data.token);
-      navigate('/dashboard'); // Redirect after login
+      const { error: authError } = await signIn(formData.email, formData.password);
+      if (authError) throw authError;
+      navigate('/content');
     } catch (err) {
       setError((err as Error).message);
+    } finally {
+      setLoading(false);
     }
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   return (
     <AuthLayout>
-      <div className="rounded-2xl backdrop-blur-sm border border-purple-800/30 p-8">
-        <h2 className="text-2xl font-bold text-center mb-8">
-          <span className="bg-gradient-to-r from-purple-400 to-purple-200 bg-clip-text text-transparent">
-            Welcome back
-          </span>
-        </h2>
+      <motion.div
+        variants={scaleIn}
+        initial="hidden"
+        animate="visible"
+        className="glass-card p-8 md:p-10"
+      >
+        <h2 className="mb-2 text-center font-display text-2xl font-bold text-white">Welcome back</h2>
+        <p className="mb-8 text-center text-sm text-slate-500">Sign in to your MailX account</p>
 
-        {error && <p className="text-red-500 text-center mb-4">{error}</p>}
+        {error && (
+          <motion.p
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-6 rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-center text-sm text-red-300"
+            role="alert"
+          >
+            {error}
+          </motion.p>
+        )}
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
-              Email address
-            </label>
+            <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-slate-300">Email</label>
             <input
               id="email"
               name="email"
               type="email"
               required
               value={formData.email}
-              onChange={handleChange}
-              className="w-full px-4 py-2 rounded-lg bg-purple-900/20 border border-purple-800/30 focus:border-purple-500 outline-none transition-colors text-white"
-              placeholder="Enter your email"
+              onChange={(e) => setFormData((p) => ({ ...p, email: e.target.value }))}
+              className="input-field"
+              placeholder="you@example.com"
+              disabled={loading}
+              autoComplete="email"
             />
           </div>
-
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">
-              Password
-            </label>
+            <label htmlFor="password" className="mb-1.5 block text-sm font-medium text-slate-300">Password</label>
             <input
               id="password"
               name="password"
               type="password"
               required
               value={formData.password}
-              onChange={handleChange}
-              className="w-full px-4 py-2 rounded-lg bg-purple-900/20 border border-purple-800/30 focus:border-purple-500 outline-none transition-colors text-white"
-              placeholder="Enter your password"
+              onChange={(e) => setFormData((p) => ({ ...p, password: e.target.value }))}
+              className="input-field"
+              disabled={loading}
+              autoComplete="current-password"
             />
           </div>
-
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <input
-                id="remember"
-                name="remember"
-                type="checkbox"
-                className="h-4 w-4 rounded border-purple-800/30 bg-purple-900/20 text-purple-600 focus:ring-purple-500"
-              />
-              <label htmlFor="remember" className="ml-2 block text-sm text-gray-300">
-                Remember me
-              </label>
-            </div>
-
-            <Link to="/forgot-password" className="text-sm text-purple-400 hover:text-purple-300 transition-colors">
-              Forgot password?
-            </Link>
-          </div>
-
-          <button
+          <motion.button
             type="submit"
-            className="w-full bg-purple-600 hover:bg-purple-500 transition-colors px-8 py-3 rounded-lg font-medium"
+            disabled={loading}
+            whileHover={{ scale: loading ? 1 : 1.02 }}
+            whileTap={{ scale: loading ? 1 : 0.98 }}
+            className="btn-primary flex w-full justify-center gap-2 py-3 disabled:opacity-60"
           >
-            Log In
-          </button>
+            {loading && <Loader2 className="h-5 w-5 animate-spin" />}
+            {loading ? 'Signing in...' : 'Log In'}
+          </motion.button>
         </form>
 
-        <p className="mt-6 text-center text-gray-400">
-          Don't have an account?{' '}
-          <Link to="/signup" className="text-purple-400 hover:text-purple-300 transition-colors">
-            Sign up
-          </Link>
+        <p className="mt-8 text-center text-sm text-slate-500">
+          Don&apos;t have an account?{' '}
+          <Link to="/signup" className="font-medium text-violet-400 hover:text-violet-300">Sign up</Link>
         </p>
-      </div>
+      </motion.div>
     </AuthLayout>
   );
 }
