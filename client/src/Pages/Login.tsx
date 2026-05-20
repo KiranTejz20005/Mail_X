@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Loader2 } from 'lucide-react';
 import { AuthLayout } from '../Components/AuthLayout';
+import { AuthFormDivider } from '../Components/AuthFormDivider';
+import { GuestModeButton } from '../Components/GuestModeButton';
 import { useAuth } from '../context/AuthContext';
 import { scaleIn } from '../lib/motionPresets';
 
@@ -91,6 +93,9 @@ export function Login() {
             {loading ? 'Signing in...' : 'Log In'}
           </motion.button>
         </form>
+
+        <AuthFormDivider />
+        <GuestModeButton />
 
         <p className="mt-8 text-center text-sm text-slate-500">
           Don&apos;t have an account?{' '}

@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Loader2 } from 'lucide-react';
 import { AuthLayout } from '../Components/AuthLayout';
+import { AuthFormDivider } from '../Components/AuthFormDivider';
+import { GuestModeButton } from '../Components/GuestModeButton';
 import { useAuth } from '../context/AuthContext';
 import { scaleIn } from '../lib/motionPresets';
 
@@ -103,6 +105,9 @@ const SignUp = () => {
             {loading ? 'Creating account...' : 'Sign Up'}
           </motion.button>
         </form>
+
+        <AuthFormDivider label="or try demo" />
+        <GuestModeButton label="Explore demo inbox" />
 
         <p className="mt-8 text-center text-sm text-slate-500">
           Already have an account?{' '}

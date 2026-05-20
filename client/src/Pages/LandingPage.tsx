@@ -7,6 +7,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Navbar } from '../Components/Navbar';
+import { GuestModeButton } from '../Components/GuestModeButton';
 import { AnimatedSection } from '../Components/AnimatedSection';
 import { ProductPreview } from '../Components/ProductPreview';
 import { scrollToSection } from '../lib/scrollTo';
@@ -81,7 +82,7 @@ function LandingPage() {
               Stay organized with an intelligent assistant built for modern teams.
             </p>
 
-            <motion.div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+            <motion.div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
               <button
                 type="button"
                 onClick={() => navigate('/signup')}
@@ -90,6 +91,10 @@ function LandingPage() {
                 Get Started
                 <ArrowRight className="h-5 w-5" />
               </button>
+              <GuestModeButton
+                label="Try Guest Demo"
+                className="btn-secondary flex items-center justify-center gap-2 px-8 py-3.5 text-base"
+              />
               <button
                 type="button"
                 onClick={() => scrollToSection('demo')}

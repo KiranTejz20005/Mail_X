@@ -8,19 +8,19 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { api, apiFetch } from '../lib/api';
+import { GuestBanner } from '../Components/GuestBanner';
 import { useAuth } from '../context/AuthContext';
+import { GUEST_EMAILS } from '../lib/guestData';
+import {
+  cleanContent,
+  filterEmails,
+  formatBodyParagraphs,
+  getEmailKey,
+  senderName,
+  type EmailLike,
+} from '../lib/emailUtils';
 
-interface Email {
-  id: string;
-  _id?: string;
-  emailId?: string;
-  from: string;
-  sender?: string;
-  subject: string;
-  summary?: string;
-  content: string;
-  category: string;
-}
+type Email = EmailLike & { sender?: string; summary?: string };
 
 const FILTERS = [
   { id: 'all', label: 'All', icon: Inbox },
@@ -64,14 +64,19 @@ function Content() {
   const [gmailError, setGmailError] = useState<string | null>(null);
   const [gmailEmail, setGmailEmail] = useState<string | null>(null);
   const [gmailSyncedAt, setGmailSyncedAt] = useState<string | null>(null);
+  const [guestBannerOpen, setGuestBannerOpen] = useState(true);
 
   const navigate = useNavigate();
-  const { session, signOut } = useAuth();
+  const { session, signOut, isGuest, exitGuestMode } = useAuth();
   const token = session?.access_token;
 
-  const getEmailKey = (email: Email) => email.id || email._id || email.emailId || '';
-
   const fetchEmails = useCallback(async () => {
+    if (isGuest) {
+      setEmails([...GUEST_EMAILS]);
+      setEmailsLoading(false);
+      setFetchError(null);
+      return;
+    }
     if (!token) return;
     setEmailsLoading(true);
     setFetchError(null);
@@ -90,9 +95,14 @@ function Content() {
     } finally {
       setEmailsLoading(false);
     }
-  }, [token]);
+  }, [token, isGuest]);
 
   const fetchGmailStatus = useCallback(async () => {
+    if (isGuest) {
+      setGmailLoading(false);
+      setGmailConnected(false);
+      return;
+    }
     if (!token) return;
     setGmailLoading(true);
     setGmailError(null);
@@ -109,10 +119,10 @@ function Content() {
     } finally {
       setGmailLoading(false);
     }
-  }, [token]);
+  }, [token, isGuest]);
 
   const connectGmail = useCallback(async () => {
-    if (!token) return;
+    if (isGuest || !token) return;
     try {
       const res = await apiFetch(api.gmailAuthUrl(), token, { method: 'GET' });
       if (!res.ok) throw new Error('Failed to start Gmail OAuth');
@@ -123,10 +133,10 @@ function Content() {
     } catch {
       setGmailError('Could not start Gmail connection.');
     }
-  }, [token]);
+  }, [token, isGuest]);
 
   const syncGmail = useCallback(async () => {
-    if (!token) return;
+    if (isGuest || !token) return;
     try {
       const res = await apiFetch(api.gmailSync(), token, { method: 'POST' });
       if (!res.ok) throw new Error('Failed to sync Gmail');
@@ -135,7 +145,7 @@ function Content() {
     } catch {
       setGmailError('Could not sync Gmail right now.');
     }
-  }, [token, fetchEmails, fetchGmailStatus]);
+  }, [token, isGuest, fetchEmails, fetchGmailStatus]);
 
   useEffect(() => {
     fetchGmailStatus();
@@ -143,7 +153,7 @@ function Content() {
   }, [fetchEmails, fetchGmailStatus]);
 
   useEffect(() => {
-    if (!gmailConnected) return;
+    if (isGuest || !gmailConnected) return;
 
     syncGmail();
     const interval = window.setInterval(() => {
@@ -151,12 +161,17 @@ function Content() {
     }, 120000);
 
     return () => window.clearInterval(interval);
-  }, [gmailConnected, syncGmail]);
+  }, [gmailConnected, syncGmail, isGuest]);
 
-  const fetchAndSummarize = async (emailContent: string) => {
+  const fetchAndSummarize = async (emailContent: string, guestSummary?: string) => {
     setSummaryLoading(true);
     setSummary(null);
     setSummaryError(false);
+    if (isGuest && guestSummary) {
+      setSummary(guestSummary);
+      setSummaryLoading(false);
+      return;
+    }
     try {
       const res = await apiFetch(api.summarize(), token, {
         method: 'POST',
@@ -185,7 +200,8 @@ function Content() {
     setResponseSaved(false);
     setIsEditing(false);
     setCopied(false);
-    fetchAndSummarize(email.content);
+    const guestMatch = GUEST_EMAILS.find((g) => g.id === getEmailKey(email));
+    fetchAndSummarize(email.content, guestMatch?.demoSummary);
     if (window.innerWidth < 768) setIsEmailListOpen(false);
   };
 
@@ -195,6 +211,13 @@ function Content() {
     setResponse(null);
     setResponseSaved(false);
     setIsEditing(false);
+    const guestMatch = GUEST_EMAILS.find((g) => g.id === getEmailKey(selectedEmail));
+    if (isGuest && guestMatch) {
+      setResponse(guestMatch.demoResponse);
+      setEditableResponse(guestMatch.demoResponse);
+      setResponseLoading(false);
+      return;
+    }
     try {
       const res = await apiFetch(api.generateResponse(), token, {
         method: 'POST',
@@ -216,9 +239,13 @@ function Content() {
 
   const handleSaveResponse = async () => {
     if (!selectedEmail || !response) return;
+    if (isGuest) {
+      navigate('/signup');
+      return;
+    }
     setResponseSaving(true);
     try {
-      const emailId = selectedEmail.id || selectedEmail._id || selectedEmail.emailId;
+      const emailId = getEmailKey(selectedEmail);
       const res = await apiFetch(api.saveResponse(), token, {
         method: 'POST',
         body: JSON.stringify({ emailId, response }),
@@ -232,29 +259,7 @@ function Content() {
     }
   };
 
-  const filteredEmails = emails.filter((email) => {
-    if (activeFilter !== 'all' && email.category !== activeFilter) return false;
-    if (!searchQuery) return true;
-    const q = searchQuery.toLowerCase();
-    return (
-      (email.subject?.toLowerCase() || '').includes(q) ||
-      (email.sender?.toLowerCase() || '').includes(q) ||
-      (email.from?.toLowerCase() || '').includes(q) ||
-      (email.content?.toLowerCase() || '').includes(q)
-    );
-  });
-
-  const cleanContent = (text: string) =>
-    text.replace(/https?:\/\/\S+/g, '').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
-
-  const formatBodyParagraphs = (text: string) => {
-    const cleaned = cleanContent(text);
-    const chunks = cleaned.split(/(?<=[.!?])\s+(?=[A-Z])/);
-    if (chunks.length <= 1) return [cleaned];
-    return chunks.filter((c) => c.length > 20);
-  };
-
-  const senderName = (from: string) => (from || 'Unknown').replace(/<.*?>/, '').trim();
+  const filteredEmails = filterEmails(emails, activeFilter, searchQuery);
 
   const handleReply = () => {
     if (!selectedEmail) return;
@@ -277,8 +282,21 @@ function Content() {
     }
   };
 
+  const handleLeave = async () => {
+    if (isGuest) {
+      exitGuestMode();
+      navigate('/login');
+      return;
+    }
+    await signOut();
+    navigate('/login');
+  };
+
   return (
     <motion.div className="page-bg flex h-screen flex-col overflow-hidden">
+      {isGuest && guestBannerOpen ? (
+        <GuestBanner onDismiss={() => setGuestBannerOpen(false)} />
+      ) : null}
       <motion.header
         initial={{ y: -16, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -303,12 +321,17 @@ function Content() {
         </div>
 
         <div className="flex min-w-0 flex-1 items-center justify-end gap-2 sm:max-w-md sm:gap-3">
-          {gmailError && (
+          {isGuest ? (
+            <span className="hidden rounded-full border border-amber-500/25 bg-amber-500/10 px-3 py-1.5 text-xs text-amber-200 sm:inline-flex">
+              Demo inbox
+            </span>
+          ) : null}
+          {!isGuest && gmailError && (
             <span className="hidden rounded-full border border-red-500/20 bg-red-500/10 px-3 py-1.5 text-xs text-red-200 sm:inline-flex">
               {gmailError}
             </span>
           )}
-          {gmailLoading ? null : gmailConnected ? (
+          {!isGuest && (gmailLoading ? null : gmailConnected ? (
             <div className="hidden items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1.5 text-xs text-emerald-200 sm:flex">
               <span className="h-2 w-2 rounded-full bg-emerald-400" />
               {gmailEmail ? `Connected: ${gmailEmail}` : 'Gmail connected'}
@@ -325,7 +348,7 @@ function Content() {
             >
               Connect Gmail
             </button>
-          )}
+          ))}
           <div className="flex min-w-0 max-w-[9rem] flex-1 items-center gap-2 rounded-xl border border-violet-500/20 bg-mail-surface/80 px-2 py-2 sm:max-w-none sm:px-3">
             <Search className="h-4 w-4 shrink-0 text-violet-400" />
             <input
@@ -349,10 +372,7 @@ function Content() {
           </motion.button>
           <button
             type="button"
-            onClick={async () => {
-              await signOut();
-              navigate('/login');
-            }}
+            onClick={handleLeave}
             className="rounded-xl border border-violet-500/20 p-2 text-violet-300 hover:bg-violet-500/10"
             aria-label="Log out"
           >
@@ -427,7 +447,11 @@ function Content() {
                 <p className="text-sm font-medium text-slate-400">
                   {emails.length === 0 ? 'Your inbox is empty' : 'No emails in this view'}
                 </p>
-                {gmailConnected ? (
+                {isGuest ? (
+                  <p className="max-w-xs text-xs leading-relaxed text-slate-500">
+                    This is a guest demo inbox. Sign up to connect Gmail and save AI replies.
+                  </p>
+                ) : gmailConnected ? (
                   <p className="max-w-xs text-xs leading-relaxed text-slate-500">
                     Gmail is connected. Sync now to load your latest emails.
                   </p>
@@ -628,7 +652,7 @@ function Content() {
                               className="flex items-center gap-1.5 rounded-lg bg-emerald-600/80 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-500 disabled:opacity-50"
                             >
                               {responseSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-                              Save Response
+                              {isGuest ? 'Sign up to save' : 'Save Response'}
                             </button>
                             {responseSaved && (
                               <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-sm text-emerald-400">

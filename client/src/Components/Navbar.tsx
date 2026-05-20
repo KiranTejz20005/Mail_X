@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Mail, Menu, X, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { navigateToSection } from '../lib/scrollTo';
+import { GuestModeButton } from './GuestModeButton';
 
 const NAV_LINKS = [
   { label: 'Features', section: 'features' },
@@ -51,6 +52,10 @@ export function Navbar() {
         </nav>
 
         <motion.div className="hidden shrink-0 items-center gap-2 rounded-full border border-violet-500/15 bg-mail-card/70 px-2 py-2 shadow-[0_0_0_1px_rgba(139,92,246,0.04)] md:flex">
+          <GuestModeButton
+            label="Try Guest"
+            className="rounded-full px-4 py-2 text-sm font-medium text-slate-300 transition-colors hover:bg-violet-500/10 hover:text-white"
+          />
           <button
             type="button"
             onClick={() => navigate('/login')}
@@ -108,6 +113,11 @@ export function Navbar() {
                   {link.label}
                 </button>
               ))}
+              <GuestModeButton
+                label="Try Guest Demo"
+                className="rounded-lg px-3 py-2.5 text-left text-violet-300 hover:bg-violet-500/10 w-full justify-start"
+                onAfterNavigate={() => setMobileOpen(false)}
+              />
               <button
                 type="button"
                 onClick={() => { navigate('/login'); setMobileOpen(false); }}

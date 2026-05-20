@@ -1,8 +1,7 @@
 import { useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
-import { ProtectedRoute } from './Components/ProtectedRoute';
-import { GuestRoute } from './Components/GuestRoute';
+import { ProtectedRoute, GuestRoute } from './Components/ProtectedRoute';
 import { scrollToSection } from './lib/scrollTo';
 import LandingPage from './Pages/LandingPage';
 import Content from './Pages/Content';
