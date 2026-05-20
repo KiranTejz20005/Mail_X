@@ -5,10 +5,13 @@
 1. Go to [https://supabase.com](https://supabase.com) and create a project.
 2. Wait for the database to finish provisioning.
 
-## 2. Run the database migration
+## 2. Run the database migrations
 
 1. Open **SQL Editor** in the Supabase dashboard.
-2. Paste and run the contents of [`supabase/migrations/001_initial.sql`](supabase/migrations/001_initial.sql).
+2. Paste and run [`supabase/migrations/001_initial.sql`](supabase/migrations/001_initial.sql).
+3. Paste and run [`supabase/migrations/002_rls_hardening.sql`](supabase/migrations/002_rls_hardening.sql) (locks down `gmail_tokens` for client access).
+
+For policy details and verification queries, see [docs/SUPABASE_RLS.md](docs/SUPABASE_RLS.md).
 
 ## 3. Configure authentication
 

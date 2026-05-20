@@ -1,5 +1,10 @@
 {
-  "dependencies": {
-    "framer-motion": "^12.6.3"
+  "name": "mailx",
+  "private": true,
+  "description": "MailX monorepo — run client and server from their directories",
+  "scripts": {
+    "test:smoke": "node scripts/smoke-test.js",
+    "dev:client": "npm run dev --prefix client",
+    "dev:server": "npm run dev --prefix server"
   }
 }
